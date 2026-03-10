@@ -19,9 +19,9 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 ## Setup
 
-### Option 1: Copy to your project
+### 1. Install Ralph into your project
 
-Copy the ralph files into your project:
+Copy the Ralph runner and the prompt file for the AI tool you want to use:
 
 ```bash
 # From your project root
@@ -38,14 +38,26 @@ cp /path/to/ralph/CODEX.md scripts/ralph/CODEX.md      # For Codex
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Install skills globally (Amp)
+This is the required setup for running `ralph.sh`.
 
-Copy the skills to your Amp or Claude config for use across all projects:
+### 2. Optional: install the PRD skills globally
+
+These skills are only needed for the optional PRD-generation workflow. `ralph.sh` itself does not require them.
+
+For Codex, local skills are discovered from `$CODEX_HOME/skills`, which defaults to `~/.codex/skills/`. Copying a skill folder there is the installation step. Restart Codex after copying so it reloads the installed skills.
+
+Copy the skills to your Amp, Codex, or Claude config for use across all projects:
 
 For AMP
 ```bash
 cp -r skills/prd ~/.config/amp/skills/
 cp -r skills/ralph ~/.config/amp/skills/
+```
+
+For Codex
+```bash
+cp -r skills/prd ~/.codex/skills/
+cp -r skills/ralph ~/.codex/skills/
 ```
 
 For Claude Code (manual)
@@ -54,7 +66,7 @@ cp -r skills/prd ~/.claude/skills/
 cp -r skills/ralph ~/.claude/skills/
 ```
 
-### Option 3: Use as Claude Code Marketplace
+### 3. Optional: install via Claude Code Marketplace instead of copying skills manually
 
 Add the Ralph marketplace to Claude Code:
 
@@ -76,7 +88,9 @@ Skills are automatically invoked when you ask Claude to:
 - "create a prd", "write prd for", "plan this feature"
 - "convert this prd", "turn into ralph format", "create prd.json"
 
-### Configure Amp auto-handoff (recommended)
+### 4. Optional: tool-specific configuration
+
+#### Amp auto-handoff (recommended)
 
 Add to `~/.config/amp/settings.json`:
 
@@ -88,7 +102,7 @@ Add to `~/.config/amp/settings.json`:
 
 This enables automatic handoff when context fills up, allowing Ralph to handle large stories that exceed a single context window.
 
-### Configure Codex execution (optional)
+#### Codex execution
 
 Ralph runs Codex with `codex exec --dangerously-bypass-approvals-and-sandbox` by default so it behaves like the existing Amp and Claude Code integrations. Override `CODEX_CMD` if you want a different execution mode, and `CODEX_PROMPT_FILE` if you want Ralph to stream a different prompt file.
 
@@ -157,8 +171,8 @@ Ralph will:
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
-| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
+| `skills/prd/` | Skill for generating PRDs (works with Amp, Claude Code, and Codex) |
+| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp, Claude Code, and Codex) |
 | `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
 | `flowchart/` | Interactive visualization of how Ralph works |
 

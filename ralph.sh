@@ -58,21 +58,30 @@ check_prd_completion() {
   [ -z "$remaining_stories" ]
 }
 
-run_codex() {
-  local -a codex_cmd_arr
+render_prompt() {
+  local prompt_file="$1"
 
-  if [ ! -f "$CODEX_PROMPT_FILE" ]; then
-    echo "Error: Missing Codex prompt file at $CODEX_PROMPT_FILE."
+  if [ ! -f "$prompt_file" ]; then
+    echo "Error: Missing prompt file at $prompt_file."
     return 1
   fi
 
-  read -r -a codex_cmd_arr <<< "$CODEX_CMD"
-  if [ "${#codex_cmd_arr[@]}" -eq 0 ]; then
+  awk -v prd_file="$PRD_FILE" -v progress_file="$PROGRESS_FILE" '
+    {
+      gsub(/__PRD_FILE__/, prd_file)
+      gsub(/__PROGRESS_FILE__/, progress_file)
+      print
+    }
+  ' "$prompt_file"
+}
+
+run_codex() {
+  if [ -z "${CODEX_CMD//[[:space:]]/}" ]; then
     echo "Error: CODEX_CMD is empty."
     return 1
   fi
 
-  cat "$CODEX_PROMPT_FILE" | "${codex_cmd_arr[@]}"
+  render_prompt "$CODEX_PROMPT_FILE" | bash -lc "$CODEX_CMD"
 }
 
 # Archive previous run if branch changed
@@ -130,10 +139,10 @@ for i in $(seq 1 $MAX_ITERATIONS); do
 
   # Run the selected tool with the ralph prompt
   if [[ "$TOOL" == "amp" ]]; then
-    cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr || true
+    render_prompt "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr || true
   elif [[ "$TOOL" == "claude" ]]; then
     # Claude Code: use --dangerously-skip-permissions for autonomous operation, --print for output
-    claude --dangerously-skip-permissions --print < "$SCRIPT_DIR/CLAUDE.md" 2>&1 | tee /dev/stderr || true
+    render_prompt "$SCRIPT_DIR/CLAUDE.md" | claude --dangerously-skip-permissions --print 2>&1 | tee /dev/stderr || true
   else
     # Codex: use non-interactive exec mode because the default TUI requires a terminal.
     run_codex 2>&1 | tee /dev/stderr || true

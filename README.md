@@ -38,14 +38,22 @@ cp /path/to/ralph/CODEX.md scripts/ralph/CODEX.md      # For Codex
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Install skills globally (Amp)
+### Option 2: Install skills globally
 
-Copy the skills to your Amp or Claude config for use across all projects:
+These skills are only needed for the optional PRD-generation workflow. `ralph.sh` itself does not require them.
+
+Copy the skills to your Amp, Codex, or Claude config for use across all projects:
 
 For AMP
 ```bash
 cp -r skills/prd ~/.config/amp/skills/
 cp -r skills/ralph ~/.config/amp/skills/
+```
+
+For Codex
+```bash
+cp -r skills/prd ~/.codex/skills/
+cp -r skills/ralph ~/.codex/skills/
 ```
 
 For Claude Code (manual)
@@ -157,8 +165,8 @@ Ralph will:
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
-| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
+| `skills/prd/` | Skill for generating PRDs (works with Amp, Claude Code, and Codex) |
+| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp, Claude Code, and Codex) |
 | `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
 | `flowchart/` | Interactive visualization of how Ralph works |
 

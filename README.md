@@ -104,14 +104,14 @@ This enables automatic handoff when context fills up, allowing Ralph to handle l
 
 #### Codex execution
 
-Ralph runs Codex with `codex exec --dangerously-bypass-approvals-and-sandbox` by default so it behaves like the existing Amp and Claude Code integrations. Override `CODEX_CMD` if you want a different execution mode, and `CODEX_PROMPT_FILE` if you want Ralph to stream a different prompt file.
+Ralph runs Codex with `codex exec --dangerously-bypass-approvals-and-sandbox` by default so it behaves like the existing Amp and Claude Code integrations. Override `CODEX_CMD` if you want a different execution mode, and `CODEX_PROMPT_FILE` if you want Ralph to stream a different prompt file. Before invoking the tool, Ralph renders the prompt so the `prd.json` and `progress.txt` placeholders become absolute paths.
 
 ```bash
 CODEX_CMD="codex exec --full-auto"
 ./scripts/ralph/ralph.sh --tool codex
 ```
 
-Use `codex exec` for Ralph runs. The default interactive Codex CLI expects a TTY and is not suitable for this loop.
+Use `codex exec` for Ralph runs. The default interactive Codex CLI expects a TTY and is not suitable for this loop. `CODEX_CMD` is executed via `bash -lc`, so quoting and simple shell expansions work as expected.
 
 ## Workflow
 

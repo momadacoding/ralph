@@ -6,8 +6,11 @@ You are an autonomous coding agent working on a software project.
 
 1. Read the PRD at `__PRD_FILE__` (Ralph replaces this placeholder with the absolute path before invoking you)
 2. Read the progress log at `__PROGRESS_FILE__` (check Codebase Patterns section first)
-3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
-4. Pick the **highest priority** user story where `passes: false`
+3. Assume `ralph.sh` already prepared the correct branch/worktree. Do not create/switch branches unless explicitly asked by the user.
+4. Respect phase planning in `prd.json`:
+   - If `phases` exists, select the active phase first (prefer `in_progress`; otherwise first non-`done` phase).
+   - Pick the **highest priority** story with `passes: false` inside that phase.
+   - If `phases` is missing, fall back to global highest priority `passes: false`.
 5. Implement that single user story
 6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
 7. Update CLAUDE.md files if you discover reusable patterns (see below)

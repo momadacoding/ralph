@@ -2,9 +2,42 @@
   "project": "MyApp",
   "branchName": "ralph/task-priority",
   "description": "Task Priority System - Add priority levels to tasks",
+  "phases": [
+    {
+      "id": "PH-001",
+      "title": "Data and Read Path",
+      "goal": "Store and render priority values end-to-end.",
+      "status": "in_progress",
+      "exitCriteria": [
+        "Priority field is persisted in database",
+        "Priority indicator is visible on task cards"
+      ],
+      "storyIds": [
+        "US-001",
+        "US-002"
+      ],
+      "notes": ""
+    },
+    {
+      "id": "PH-002",
+      "title": "Interaction and Filtering",
+      "goal": "Allow users to edit and filter by priority in UI.",
+      "status": "planned",
+      "exitCriteria": [
+        "Users can edit priority from task UI",
+        "Users can filter task list by priority"
+      ],
+      "storyIds": [
+        "US-003",
+        "US-004"
+      ],
+      "notes": ""
+    }
+  ],
   "userStories": [
     {
       "id": "US-001",
+      "phaseId": "PH-001",
       "title": "Add priority field to database",
       "description": "As a developer, I need to store task priority so it persists across sessions.",
       "acceptanceCriteria": [
@@ -18,6 +51,7 @@
     },
     {
       "id": "US-002",
+      "phaseId": "PH-001",
       "title": "Display priority indicator on task cards",
       "description": "As a user, I want to see task priority at a glance.",
       "acceptanceCriteria": [
@@ -32,6 +66,7 @@
     },
     {
       "id": "US-003",
+      "phaseId": "PH-002",
       "title": "Add priority selector to task edit",
       "description": "As a user, I want to change a task's priority when editing it.",
       "acceptanceCriteria": [
@@ -47,6 +82,7 @@
     },
     {
       "id": "US-004",
+      "phaseId": "PH-002",
       "title": "Filter tasks by priority",
       "description": "As a user, I want to filter the task list to see only high-priority items.",
       "acceptanceCriteria": [

@@ -23,9 +23,21 @@ Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph di
   "project": "[Project Name]",
   "branchName": "ralph/[feature-name-kebab-case]",
   "description": "[Feature description from PRD title/intro]",
+  "phases": [
+    {
+      "id": "PH-001",
+      "title": "[Phase title]",
+      "goal": "[What this phase proves or delivers]",
+      "status": "in_progress",
+      "exitCriteria": ["[Verifiable phase outcome]"],
+      "storyIds": ["US-001"],
+      "notes": ""
+    }
+  ],
   "userStories": [
     {
       "id": "US-001",
+      "phaseId": "PH-001",
       "title": "[Story title]",
       "description": "As a [user], I want [feature] so that [benefit]",
       "acceptanceCriteria": [
@@ -121,9 +133,11 @@ Frontend stories are NOT complete until visually verified. Ralph will use the de
 1. **Each user story becomes one JSON entry**
 2. **IDs**: Sequential (US-001, US-002, etc.)
 3. **Priority**: Based on dependency order, then document order
-4. **All stories**: `passes: false` and empty `notes`
-5. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
-6. **Always add**: "Typecheck passes" to every story's acceptance criteria
+4. **Add phases**: Group stories into 2-4 dependency-ordered phases (PH-001, PH-002, ...)
+5. **Assign `phaseId`**: Every story must reference exactly one phase
+6. **All stories**: `passes: false` and empty `notes`
+7. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
+8. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 ---
 
@@ -167,9 +181,36 @@ Add ability to mark tasks with different statuses.
   "project": "TaskApp",
   "branchName": "ralph/task-status",
   "description": "Task Status Feature - Track task progress with status indicators",
+  "phases": [
+    {
+      "id": "PH-001",
+      "title": "Data and Read Path",
+      "goal": "Persist status and display it clearly in task cards.",
+      "status": "in_progress",
+      "exitCriteria": [
+        "Status is stored in DB",
+        "Status badge is visible on task cards"
+      ],
+      "storyIds": ["US-001", "US-002"],
+      "notes": ""
+    },
+    {
+      "id": "PH-002",
+      "title": "Interaction and Filtering",
+      "goal": "Allow status edits and filtering.",
+      "status": "planned",
+      "exitCriteria": [
+        "Users can change status inline",
+        "Users can filter by status"
+      ],
+      "storyIds": ["US-003", "US-004"],
+      "notes": ""
+    }
+  ],
   "userStories": [
     {
       "id": "US-001",
+      "phaseId": "PH-001",
       "title": "Add status field to tasks table",
       "description": "As a developer, I need to store task status in the database.",
       "acceptanceCriteria": [
@@ -183,6 +224,7 @@ Add ability to mark tasks with different statuses.
     },
     {
       "id": "US-002",
+      "phaseId": "PH-001",
       "title": "Display status badge on task cards",
       "description": "As a user, I want to see task status at a glance.",
       "acceptanceCriteria": [
@@ -197,6 +239,7 @@ Add ability to mark tasks with different statuses.
     },
     {
       "id": "US-003",
+      "phaseId": "PH-002",
       "title": "Add status toggle to task list rows",
       "description": "As a user, I want to change task status directly from the list.",
       "acceptanceCriteria": [
@@ -212,6 +255,7 @@ Add ability to mark tasks with different statuses.
     },
     {
       "id": "US-004",
+      "phaseId": "PH-002",
       "title": "Filter tasks by status",
       "description": "As a user, I want to filter the list to see only certain statuses.",
       "acceptanceCriteria": [
@@ -252,6 +296,8 @@ Before writing prd.json, verify:
 - [ ] **Previous run archived** (if prd.json exists with different branchName, archive it first)
 - [ ] Each story is completable in one iteration (small enough)
 - [ ] Stories are ordered by dependency (schema to backend to UI)
+- [ ] Stories are grouped into clear dependency-ordered phases
+- [ ] Every story has a valid `phaseId`
 - [ ] Every story has "Typecheck passes" as criterion
 - [ ] UI stories have "Verify in browser using dev-browser skill" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)

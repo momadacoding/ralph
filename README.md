@@ -137,6 +137,7 @@ Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 ```
 
 This creates `prd.json` with phase-aware user stories structured for autonomous execution.
+For better replanning quality, include `sourcePrdPath` in `prd.json` so Ralph can also read the original markdown PRD.
 
 ### 3. Run Ralph
 
@@ -197,6 +198,8 @@ Replanning behavior:
 - Control cadence with `--replan-every <n>` (default: `1`).
 - Override prompt path with `--replan-prompt <path>` or `REPLAN_PROMPT_FILE`.
 - For `--replan-prompt`, relative paths are resolved from the `ralph.sh` directory.
+- If `sourcePrdPath` is set in `prd.json`, replan reads that source markdown as higher-level context.
+- If `sourcePrdPath` is missing/unreadable, replan falls back to `prd.json + progress.txt`.
 
 Parameter quick reference:
 - `--tool`: `amp` (default), `claude`, `codex`
@@ -315,6 +318,9 @@ cat prd.json | jq '.userStories[] | {id, title, passes}'
 
 # See phase status
 cat prd.json | jq '.phases // [] | map({id, title, status})'
+
+# See source PRD path used by replan
+cat prd.json | jq '.sourcePrdPath // \"\"'
 
 # See active phase and its story IDs
 cat prd.json | jq '(.phases // [] | map(select((.status // "planned") != "done")) | .[0]) | {activePhase: (.id // "none"), storyIds: (.storyIds // [])}'

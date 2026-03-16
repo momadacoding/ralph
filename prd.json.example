@@ -2,6 +2,7 @@
   "project": "MyApp",
   "branchName": "ralph/task-priority",
   "description": "Task Priority System - Add priority levels to tasks",
+  "sourcePrdPath": "tasks/prd-task-priority.md",
   "phases": [
     {
       "id": "PH-001",

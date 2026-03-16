@@ -32,6 +32,39 @@ current_git_branch() {
   git symbolic-ref --short -q HEAD || true
 }
 
+resolve_source_prd_file() {
+  local source_path=""
+  local resolved_path=""
+
+  if [ ! -f "$PRD_FILE" ]; then
+    echo ""
+    return
+  fi
+
+  source_path="$(jq -r '.sourcePrdPath // empty' "$PRD_FILE" 2>/dev/null || true)"
+  if [ -z "$source_path" ]; then
+    echo ""
+    return
+  fi
+
+  case "$source_path" in
+    /*)
+      resolved_path="$source_path"
+      ;;
+    *)
+      resolved_path="$(cd "$(dirname "$PRD_FILE")" && pwd)/$source_path"
+      ;;
+  esac
+
+  if [ -f "$resolved_path" ]; then
+    echo "$resolved_path"
+    return
+  fi
+
+  echo "Warning: sourcePrdPath is set but file was not found: $resolved_path" >&2
+  echo ""
+}
+
 ensure_clean_worktree_for_switch() {
   if ! git diff --quiet --ignore-submodules -- || ! git diff --cached --quiet --ignore-submodules -- || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     echo "Error: Working tree has uncommitted changes. Commit/stash changes before switching branches."
@@ -262,6 +295,7 @@ else
 fi
 
 PRD_BRANCH="$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")"
+SOURCE_PRD_FILE="$(resolve_source_prd_file)"
 CURRENT_BRANCH_BEFORE_SWITCH="$(current_git_branch)"
 if [ "$BRANCH_STRATEGY" = "reuse-current" ]; then
   RUN_BRANCH_KEY="$CURRENT_BRANCH_BEFORE_SWITCH"
@@ -310,11 +344,12 @@ render_prompt() {
     return 1
   fi
 
-  awk -v prd_file="$PRD_FILE" -v progress_file="$PROGRESS_FILE" -v active_phase="$active_phase" '
+  awk -v prd_file="$PRD_FILE" -v progress_file="$PROGRESS_FILE" -v active_phase="$active_phase" -v source_prd_file="$SOURCE_PRD_FILE" '
     {
       gsub(/__PRD_FILE__/, prd_file)
       gsub(/__PROGRESS_FILE__/, progress_file)
       gsub(/__ACTIVE_PHASE__/, active_phase)
+      gsub(/__SOURCE_PRD_FILE__/, source_prd_file)
       print
     }
   ' "$prompt_file"
@@ -405,6 +440,11 @@ if [ "$ENABLE_REPLAN" -eq 1 ]; then
   echo "Replan cadence: every $REPLAN_EVERY iteration(s)"
 else
   echo "Replan step: disabled"
+fi
+if [ -n "$SOURCE_PRD_FILE" ]; then
+  echo "Source PRD: $SOURCE_PRD_FILE"
+else
+  echo "Source PRD: not set"
 fi
 
 case "$TOOL" in

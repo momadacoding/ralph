@@ -23,6 +23,7 @@ Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph di
   "project": "[Project Name]",
   "branchName": "ralph/[feature-name-kebab-case]",
   "description": "[Feature description from PRD title/intro]",
+  "sourcePrdPath": "tasks/prd-[feature-name].md",
   "phases": [
     {
       "id": "PH-001",
@@ -133,11 +134,12 @@ Frontend stories are NOT complete until visually verified. Ralph will use the de
 1. **Each user story becomes one JSON entry**
 2. **IDs**: Sequential (US-001, US-002, etc.)
 3. **Priority**: Based on dependency order, then document order
-4. **Add phases**: Group stories into 2-4 dependency-ordered phases (PH-001, PH-002, ...)
-5. **Assign `phaseId`**: Every story must reference exactly one phase
-6. **All stories**: `passes: false` and empty `notes`
-7. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
-8. **Always add**: "Typecheck passes" to every story's acceptance criteria
+4. **sourcePrdPath**: Set to the source markdown file path when input came from a file (leave empty for raw text input)
+5. **Add phases**: Group stories into 2-4 dependency-ordered phases (PH-001, PH-002, ...)
+6. **Assign `phaseId`**: Every story must reference exactly one phase
+7. **All stories**: `passes: false` and empty `notes`
+8. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
+9. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 ---
 
@@ -181,6 +183,7 @@ Add ability to mark tasks with different statuses.
   "project": "TaskApp",
   "branchName": "ralph/task-status",
   "description": "Task Status Feature - Track task progress with status indicators",
+  "sourcePrdPath": "tasks/prd-task-status.md",
   "phases": [
     {
       "id": "PH-001",
@@ -298,6 +301,7 @@ Before writing prd.json, verify:
 - [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Stories are grouped into clear dependency-ordered phases
 - [ ] Every story has a valid `phaseId`
+- [ ] `sourcePrdPath` is set when source input is a markdown file
 - [ ] Every story has "Typecheck passes" as criterion
 - [ ] UI stories have "Verify in browser using dev-browser skill" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)

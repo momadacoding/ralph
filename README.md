@@ -35,6 +35,9 @@ cp /path/to/ralph/CLAUDE.md scripts/ralph/CLAUDE.md    # For Claude Code
 # OR
 cp /path/to/ralph/CODEX.md scripts/ralph/CODEX.md      # For Codex
 
+# Copy the replan prompt (used before each execution step)
+cp /path/to/ralph/REPLAN.md scripts/ralph/REPLAN.md
+
 chmod +x scripts/ralph/ralph.sh
 ```
 
@@ -104,7 +107,7 @@ This enables automatic handoff when context fills up, allowing Ralph to handle l
 
 #### Codex execution
 
-Ralph runs Codex with `codex exec --dangerously-bypass-approvals-and-sandbox` by default so it behaves like the existing Amp and Claude Code integrations. Override `CODEX_CMD` if you want a different execution mode, and `CODEX_PROMPT_FILE` if you want Ralph to stream a different prompt file. Before invoking the tool, Ralph renders the prompt so the `prd.json` and `progress.txt` placeholders become absolute paths.
+Ralph runs Codex with `codex exec --dangerously-bypass-approvals-and-sandbox` by default so it behaves like the existing Amp and Claude Code integrations. Override `CODEX_CMD` if you want a different execution mode, and `CODEX_PROMPT_FILE`/`REPLAN_PROMPT_FILE` if you want Ralph to stream different prompt files. Before invoking the tool, Ralph renders the prompts so the `prd.json` and `progress.txt` placeholders become absolute paths.
 
 ```bash
 CODEX_CMD="codex exec --full-auto"
@@ -133,7 +136,7 @@ Use the Ralph skill to convert the markdown PRD to JSON:
 Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 ```
 
-This creates `prd.json` with user stories structured for autonomous execution.
+This creates `prd.json` with phase-aware user stories structured for autonomous execution.
 
 ### 3. Run Ralph
 
@@ -146,25 +149,80 @@ This creates `prd.json` with user stories structured for autonomous execution.
 
 # Using Codex
 ./scripts/ralph/ralph.sh --tool codex [max_iterations]
+
+# Reuse the current non-main branch/worktree
+./scripts/ralph/ralph.sh --branch-strategy reuse-current [max_iterations]
+
+# Create/switch PRD branch from current branch
+./scripts/ralph/ralph.sh --branch-strategy create-from-current [max_iterations]
+
+# Create/switch PRD branch from a custom base branch
+./scripts/ralph/ralph.sh --branch-strategy create-from-base --base-branch develop [max_iterations]
+
+# Disable replanning stage (not recommended)
+./scripts/ralph/ralph.sh --no-replan [max_iterations]
+
+# Replan every 3 iterations (1, 4, 7, ...)
+./scripts/ralph/ralph.sh --replan-every 3 [max_iterations]
 ```
 
 Default is 10 iterations. Use `--tool amp`, `--tool claude`, or `--tool codex` to select your AI coding tool.
 
+Common parameterized examples:
+
+```bash
+# Codex + reuse current worktree/branch + replan every 3 iterations
+./scripts/ralph/ralph.sh --tool codex --branch-strategy reuse-current --replan-every 3 18
+
+# Claude + create PRD branch from current branch + replan every iteration
+./scripts/ralph/ralph.sh --tool claude --branch-strategy create-from-current --replan-every 1 12
+
+# Amp + create PRD branch from develop + custom replan prompt
+./scripts/ralph/ralph.sh --tool amp --branch-strategy create-from-base --base-branch develop --replan-prompt prompts/replan.md 15
+
+# Fast smoke run (execution only)
+./scripts/ralph/ralph.sh --tool codex --no-replan 5
+```
+
+Branch/worktree behavior is controlled by `--branch-strategy`:
+- `create-from-base` (default): use `prd.json.branchName`; create it from `--base-branch` (`main` by default) if needed.
+- `create-from-current`: use `prd.json.branchName`; create it from the current branch if needed.
+- `reuse-current`: keep the current branch and current worktree (current branch must not be `main`/`master`).
+
+Ralph reuses the current worktree automatically. It does not create a new worktree.
+
+Replanning behavior:
+- Replan is enabled by default and runs before each execution step using `REPLAN.md`.
+- Disable with `--no-replan`.
+- Control cadence with `--replan-every <n>` (default: `1`).
+- Override prompt path with `--replan-prompt <path>` or `REPLAN_PROMPT_FILE`.
+- For `--replan-prompt`, relative paths are resolved from the `ralph.sh` directory.
+
+Parameter quick reference:
+- `--tool`: `amp` (default), `claude`, `codex`
+- `--branch-strategy`: `create-from-base` (default), `create-from-current`, `reuse-current`
+- `--base-branch`: base branch for `create-from-base` (default `main`)
+- `--replan-every`: run replan every N iterations (default `1`)
+- `--no-replan`: disable replan stage
+- `--replan-prompt`: custom replan prompt path
+
 Ralph will:
-1. Create a feature branch (from PRD `branchName`)
-2. Pick the highest priority story where `passes: false`
-3. Implement that single story
-4. Run quality checks (typecheck, tests)
-5. Commit if checks pass
-6. Update `prd.json` to mark story as `passes: true`
-7. Append learnings to `progress.txt`
-8. Repeat until all stories pass or max iterations reached
+1. Prepare branch/worktree according to `--branch-strategy`
+2. Replan current phase/task queue
+3. Pick the highest priority story where `passes: false` (within active phase if phases are defined)
+4. Implement that single story
+5. Run quality checks (typecheck, tests)
+6. Commit if checks pass
+7. Update `prd.json` to mark story as `passes: true`
+8. Append learnings to `progress.txt`
+9. Repeat until all stories pass or max iterations reached
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `ralph.sh` | The bash loop that spawns fresh AI instances (supports `--tool amp`, `--tool claude`, or `--tool codex`) |
+| `ralph.sh` | The bash loop that spawns fresh AI instances (supports `--tool`, branch strategy, and replan controls) |
+| `REPLAN.md` | Prompt template for the replan stage (plan updates only) |
 | `prompt.md` | Prompt template for Amp |
 | `CLAUDE.md` | Prompt template for Claude Code |
 | `CODEX.md` | Prompt template for Codex |
@@ -198,6 +256,15 @@ Each iteration spawns a **new AI instance** (Amp, Claude Code, or Codex) with cl
 - Git history (commits from previous iterations)
 - `progress.txt` (learnings and context)
 - `prd.json` (which stories are done)
+
+### Phase-Driven Loop
+
+Ralph now supports a phase-first loop:
+1. Replan the next phase/tasks from latest observations
+2. Execute one story from the active phase
+3. Observe results and repeat
+
+Use `phases` + `phaseId` in `prd.json` to keep execution aligned with stage goals.
 
 ### Small Tasks
 
@@ -246,6 +313,15 @@ Check current state:
 # See which stories are done
 cat prd.json | jq '.userStories[] | {id, title, passes}'
 
+# See phase status
+cat prd.json | jq '.phases // [] | map({id, title, status})'
+
+# See active phase and its story IDs
+cat prd.json | jq '(.phases // [] | map(select((.status // "planned") != "done")) | .[0]) | {activePhase: (.id // "none"), storyIds: (.storyIds // [])}'
+
+# See top pending stories by priority
+cat prd.json | jq '.userStories | map(select(.passes == false)) | sort_by(.priority) | .[:5] | map({id, phaseId, priority, title})'
+
 # See learnings from previous iterations
 cat progress.txt
 
@@ -262,7 +338,7 @@ After copying `prompt.md` (for Amp), `CLAUDE.md` (for Claude Code), or `CODEX.md
 
 ## Archiving
 
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
+Ralph automatically archives previous runs when you start on a different active branch. Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
 
 ## References
 

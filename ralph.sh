@@ -438,6 +438,7 @@ fi
 if [ "$ENABLE_REPLAN" -eq 1 ]; then
   echo "Replan step: enabled ($REPLAN_PROMPT_FILE)"
   echo "Replan cadence: every $REPLAN_EVERY iteration(s)"
+  echo "First replan iteration: $REPLAN_EVERY"
 else
   echo "Replan step: disabled"
 fi
@@ -466,7 +467,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   echo "==============================================================="
 
   if [ "$ENABLE_REPLAN" -eq 1 ]; then
-    if (( (i - 1) % REPLAN_EVERY == 0 )); then
+    if (( i % REPLAN_EVERY == 0 )); then
       if [ -f "$REPLAN_PROMPT_FILE" ]; then
         echo "Replan step (iteration $i)"
         run_agent_prompt "$REPLAN_PROMPT_FILE" 2>&1 | tee /dev/stderr || true

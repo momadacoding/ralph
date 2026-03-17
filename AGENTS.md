@@ -70,5 +70,6 @@ npm run dev
 - Prefer phase-based planning (`phases` + `phaseId`) so each iteration executes within a single active phase
 - Replanning should update `prd.json`/`progress.txt` first, then execution prompt should implement one story
 - Use `--replan-every` to reduce planning cost on long runs while keeping periodic replanning checkpoints
+- `--replan-every N` triggers replanning on iterations `N, 2N, 3N, ...` (not iteration 1 unless `N=1`)
 - Set `sourcePrdPath` in `prd.json` when available so replan can reference the original markdown PRD
 - If a story is blocked by unresolved product decisions/open questions, mark the active phase `blocked`, add/update one focused unblocker story, and record 2-3 decision options (with a recommendation) in `progress.txt`

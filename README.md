@@ -196,6 +196,7 @@ Replanning behavior:
 - Replan is enabled by default and runs before each execution step using `REPLAN.md`.
 - Disable with `--no-replan`.
 - Control cadence with `--replan-every <n>` (default: `1`).
+- With `--replan-every <n>`, replanning runs on iterations `n, 2n, 3n, ...` (for example `3, 6, 9, ...`).
 - Override prompt path with `--replan-prompt <path>` or `REPLAN_PROMPT_FILE`.
 - For `--replan-prompt`, relative paths are resolved from the `ralph.sh` directory.
 - If `sourcePrdPath` is set in `prd.json`, replan reads that source markdown as higher-level context.

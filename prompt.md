@@ -18,7 +18,8 @@ You are an autonomous coding agent working on a software project.
 8. Update AGENTS.md files if you discover reusable patterns (see below)
 9. Update the PRD to set `passes: true` for the completed story
 10. Append your progress to `progress.txt`
-11. If checks pass, commit ALL changes (including prd.json and progress.txt) with message: `feat: [Story ID] - [Story Title]`
+11. If checks pass, stage ALL changes with `git add -A` and commit with message: `feat: [Story ID] - [Story Title]`
+    - You MUST use `git add -A` to ensure prd.json and progress.txt are included in the commit
 
 ## Decision Blockers (Open Questions)
 

@@ -52,7 +52,7 @@ resolve_source_prd_file() {
       resolved_path="$source_path"
       ;;
     *)
-      resolved_path="$(cd "$(dirname "$PRD_FILE")" && pwd)/$source_path"
+      resolved_path="$(git rev-parse --show-toplevel)/$source_path"
       ;;
   esac
 
